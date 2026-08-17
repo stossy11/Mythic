@@ -853,8 +853,9 @@ struct ContentView: View {
     @State private var pointerPanel = false
     @Namespace private var pointerNS
     /// .compact = iPhone landscape: game surface expands, arrow keys appear.
-    @Environment(\.verticalSizeClass) private var vSizeClass
-
+    // @Environment(\.verticalSizeClass) private var fvSizeClass
+    @State private var orientation = UIDevice.current.orientation
+    
     enum JITStatus {
         case unknown
         case testing
@@ -873,7 +874,7 @@ struct ContentView: View {
          * two-column selection behaviour. */
         NavigationStack {
             Group {
-                if vSizeClass == .compact {
+                if orientation.isLandscape {
                     landscapeBody
                 } else {
                     portraitBody
@@ -890,6 +891,10 @@ struct ContentView: View {
                 jit_install_trap_handler()
                 entitlements = EntitlementStatus.check()
                 logEntitlementStatus()
+            }
+            // fix iPadOS rotation :sob: 
+            .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+                self.orientation = UIDevice.current.orientation
             }
         }
     }
